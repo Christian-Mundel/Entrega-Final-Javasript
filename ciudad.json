@@ -1,0 +1,34 @@
+[
+    {
+        "id": 1,
+        "destino": "Argentina"
+    },
+    {
+        "id": 2,
+        "destino": "Mexico"
+    },
+    {
+        "id": 2,
+        "destino": "Brazil"
+    },
+    {
+        "id": 4,
+        "destino": "Australia"
+    },
+    {
+        "id": 5,
+        "destino": "Francia"
+    },
+    {
+        "id": 6,
+        "destino": "España"
+    },
+    {
+        "id": 7,
+        "destino": "Estados Unidos"
+    },
+    {
+        "id": 8,
+        "destino": "Inglaterra"
+    }
+]

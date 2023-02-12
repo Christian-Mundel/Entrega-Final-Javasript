@@ -1,28 +1,62 @@
 const formulario = document.getElementById('ingreso-pasajero');
-const mensajeError = document.getElementById('mensaje-error');
 const tabla = document.getElementById('tabla');
-const pasajerosDelLocalStorage = JSON.parse(localStorage.getItem('pasajeros')) || [];
-const pasajeros = pasajerosDelLocalStorage.map((pasajero) => {
-    return new Pasajero(pasajero);
+let ciudad = [];
+let ciudadDelugares = [];
+
+const obtenerLugares = async () => {
+    const response = await fetch('./lugares.json');
+    const data = await response.json();
+
+    ciudadDelugares = data;
+
+    document.getElementById('destino').innerHTML = data
+    .map(({ id, destino }) => `<option value="${id}">${destino}</option>`)
+    .join();
+}
+
+obtenerLugares();
+
+const llamadaAlServidor = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        const ciudadDelLocalStorage = JSON.parse(localStorage.getItem('pasajeros')) || [];
+        const storageCiudad = ciudadDelLocalStorage.map((pasajero) => {
+            return new Pasajero(pasajero);
 });
 
-const agregarFilaALaTabla = ({ nombre, apellido, edad, dni }) => {
+        ciudad = storageCiudad;
+
+        resolve(storageCiudad);
+    }, 2000);
+});
+
+const agregarFilaALaTabla = ({ nombre, apellido, edad, destino, dni }) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td>${nombre}</td>
         <td>${apellido}</td>
         <td>${edad}</td>
+        <td>${ciudadDelugares.find(destinoDePasajero => destinoDePasajero.id === destino)?.destino}</td>
         <td>${dni}</td>
     `;
     
     const botonera = document.createElement('td');
     botonera.innerHTML = '<button class="btn btn-danger mb-3">ELIMINAR</button>';
     botonera.addEventListener('click', () => {
-        const pasajeroEcontrado = pasajeros.find((elemento) => elemento.nombre === nombre);
-        const indice = pasajeros.indexOf(pasajeroEcontrado);
-        pasajeros.splice(indice, 1);
-        localStorage.setItem('pasajeros', JSON.stringify(pasajeros));
-        tr.remove();
+        Swal.fire({
+            text: `Vas a eliminar ${nombre}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Si',
+            cancelButtonText: 'No' 
+        }).then((respuesta) => {
+            if(respuesta.isConfirmed) {
+                const pasajeroEncontrado = ciudad.find((elemento) => elemento.nombre === nombre);
+                const indice = ciudad.indexOf(pasajeroEncontrado);
+                ciudad.splice(indice, 1);
+                localStorage.setItem('ciudad', JSON.stringify(ciudad));
+                tr.remove();
+            } 
+        });
     });
 
     tr.append(botonera);
@@ -30,27 +64,55 @@ const agregarFilaALaTabla = ({ nombre, apellido, edad, dni }) => {
     tabla.append(tr);
 }
 
-pasajeros.forEach((pasajero) => {
-    agregarFilaALaTabla(pasajero);
-})
+const mensajeEspera = document.getElementById('mensaje-espera');
+mensajeEspera.hidden = false;
+
+llamadaAlServidor.then((data) => {
+    for(const pasajero of data) {
+        agregarFilaALaTabla(pasajero);
+    }
+    mensajeEspera.hidden = true;
+    tabla.hidden = false;
+}).catch(() => {
+    toastify({
+        text: 'Ocurrio un error, reintente mas tarde',
+        gravity: 'top',
+        position: 'right',
+        duration: 2000,
+        style: {
+            background: 'yelow'
+        },
+        close: true
+    }).showToast();});
 
 formulario.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    const[nombreInput, apellidoInput, edadInput, destinoInput, dniInput] = e.target;
     const pasajero = new Pasajero({
-    nombre: e.target[0].value,
-    apellido: e.target[1].value,
-    edad: e.target[2].value,
-    dni: e.target[3].value,
+        nombre: nombreInput.value,
+        apellido: apellidoInput.value,
+        edad: edadInput.value,
+        destino: destinoInput.value,
+        dni: dniInput.value,
     });
-
+    
     if (!pasajero.soyMayorDeEdad()) {
-    mensajeError.innerText = 'Tienes que ser mayor de 18 años o traer una autorizacion ante escribano publico';
+        Toastify({
+            text:'Tienes que ser mayor de 18 años o traer una autorizacion ante escribano publico',
+            gravity: 'top',
+        position: 'right',
+        duration: 2000,
+        style: {
+            background: 'yelow'
+        },
+        close: true
+        }).showToast();
     return;
     }
 
-    pasajeros.push(pasajero);
-    localStorage.setItem('pasajeros', JSON.stringify(pasajeros));
+    ciudad.push(pasajero);
+    localStorage.setItem('ciudad', JSON.stringify(ciudad));
 
     agregarFilaALaTabla(pasajero);
 
