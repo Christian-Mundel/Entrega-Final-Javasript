@@ -78,9 +78,9 @@ llamadaAlServidor.then((data) => {
         text: 'Ocurrio un error, reintente mas tarde',
         gravity: 'top',
         position: 'right',
-        duration: 2000,
+        duration: 5000,
         style: {
-            background: 'yelow'
+            background: 'yellow'
         },
         close: true
     }).showToast();});
@@ -102,9 +102,9 @@ formulario.addEventListener('submit', (e) => {
             text:'Tienes que ser mayor de 18 años o traer una autorizacion ante escribano publico',
             gravity: 'top',
         position: 'right',
-        duration: 2000,
+        duration: 5000,
         style: {
-            background: 'yelow'
+            background: 'yellow'
         },
         close: true
         }).showToast();
